@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Users, Edit } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useNavigate } from "react-router-dom";
 
 const roles = [
   { name: "Super Admin", description: "Full system access and control", users: 2, color: "destructive" },
@@ -45,6 +46,8 @@ const permissions = [
 ];
 
 const Roles = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -72,7 +75,7 @@ const Roles = () => {
                     </p>
                   </div>
                 </div>
-                <Button size="icon" variant="ghost">
+                <Button size="icon" variant="ghost" onClick={() => navigate(`/roles/create?edit=${role.name}`)}>
                   <Edit className="h-4 w-4" />
                 </Button>
               </div>

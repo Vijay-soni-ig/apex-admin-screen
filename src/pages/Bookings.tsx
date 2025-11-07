@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Calendar, Download } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,8 @@ const bookings = [
 ];
 
 const Bookings = () => {
+  const navigate = useNavigate();
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Completed":
@@ -153,7 +156,7 @@ const Bookings = () => {
                       </Badge>
                     </td>
                     <td className="py-4">
-                      <Button size="sm" variant="outline">View</Button>
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/bookings/${booking.id}`)}>View Details</Button>
                     </td>
                   </tr>
                 ))}

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Filter, MoreVertical, Eye, Lock, Mail } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +47,7 @@ const admins = [
 ];
 
 const Users = () => {
+  const navigate = useNavigate();
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [cityFilter, setCityFilter] = useState("all");
@@ -57,7 +59,7 @@ const Users = () => {
           <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
           <p className="text-muted-foreground mt-1">Manage customers, providers, and team members</p>
         </div>
-        <Button>
+        <Button onClick={() => navigate('/users/add')}>
           <Plus className="h-4 w-4 mr-2" />
           Add User
         </Button>

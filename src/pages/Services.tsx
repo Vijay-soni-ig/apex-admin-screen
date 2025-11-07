@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MoreVertical, Package } from "lucide-react";
+import { Plus, MoreVertical, Package, Edit, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +30,8 @@ const services = [
 ];
 
 const Services = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -37,11 +40,11 @@ const Services = () => {
           <p className="text-muted-foreground mt-1">Manage service categories and offerings</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => navigate('/pricing-rules')}>
             <Package className="h-4 w-4 mr-2" />
             Pricing Rules
           </Button>
-          <Button>
+          <Button onClick={() => navigate('/services/add')}>
             <Plus className="h-4 w-4 mr-2" />
             Add Service
           </Button>
@@ -153,19 +156,10 @@ const Services = () => {
                           <Badge className="bg-success text-success-foreground">{service.status}</Badge>
                         </td>
                         <td className="py-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>Edit Service</DropdownMenuItem>
-                              <DropdownMenuItem>Update Pricing</DropdownMenuItem>
-                              <DropdownMenuItem>Manage Cities</DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">Deactivate</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="ghost" onClick={() => navigate(`/services/edit/${idx + 1}`)}><Edit className="h-4 w-4" /></Button>
+                            <Button size="sm" variant="ghost"><Trash2 className="h-4 w-4" /></Button>
+                          </div>
                         </td>
                       </tr>
                     ))}

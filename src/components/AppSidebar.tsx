@@ -47,24 +47,32 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed";
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent>
-        <div className="px-3 py-4">
+    <Sidebar collapsible="icon" className="border-r border-border/50">
+      <SidebarContent className="bg-gradient-to-b from-card to-card/50">
+        <div className="px-3 py-6 border-b border-border/50">
           {!isCollapsed && (
-            <h2 className="text-lg font-semibold text-sidebar-foreground">ServiceHub</h2>
+            <div className="flex items-center gap-2">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold shadow-lg">
+                S
+              </div>
+              <div>
+                <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ServiceHub</h2>
+                <p className="text-xs text-muted-foreground">Admin Portal</p>
+              </div>
+            </div>
           )}
           {isCollapsed && (
             <div className="flex items-center justify-center">
-              <div className="h-8 w-8 rounded-lg bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground font-bold">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold shadow-lg">
                 S
               </div>
             </div>
           )}
         </div>
-        <SidebarGroup>
-          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+        <SidebarGroup className="px-2 py-4">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground px-3 mb-2">Platform</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild tooltip={item.title}>
@@ -73,8 +81,8 @@ export function AppSidebar() {
                       end={item.url === "/"}
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "hover:bg-sidebar-accent/50"
+                          ? "bg-primary/10 text-primary border-l-2 border-primary font-medium rounded-r-lg"
+                          : "hover:bg-accent/10 text-sidebar-foreground hover:text-primary transition-all rounded-lg"
                       }
                     >
                       <item.icon className="h-4 w-4" />

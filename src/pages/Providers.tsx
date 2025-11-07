@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Filter, Star, MapPin, Calendar } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
 
 const providers = [
   { 
@@ -69,6 +70,8 @@ const providers = [
 ];
 
 const Providers = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -76,7 +79,7 @@ const Providers = () => {
           <h1 className="text-3xl font-bold tracking-tight">Service Providers</h1>
           <p className="text-muted-foreground mt-1">Manage your service provider network</p>
         </div>
-        <Button>
+        <Button onClick={() => navigate('/providers/add')}>
           <Plus className="h-4 w-4 mr-2" />
           Add Provider
         </Button>
@@ -177,8 +180,8 @@ const Providers = () => {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1">View Profile</Button>
-                <Button size="sm" className="flex-1">View Bookings</Button>
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => navigate(`/providers/${provider.id}`)}>View Profile</Button>
+                <Button size="sm" className="flex-1" onClick={() => navigate(`/providers/${provider.id}/bookings`)}>View Bookings</Button>
               </div>
             </CardContent>
           </Card>

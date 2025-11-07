@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Download, TrendingUp, Wallet } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
 
 const transactions = [
   { id: "TXN-5094", user: "Priya Sharma", type: "Customer Payment", amount: "₹950", method: "Razorpay", status: "Success", date: "27 Oct 2024" },
@@ -21,6 +22,8 @@ const payoutSummary = [
 ];
 
 const Payments = () => {
+  const navigate = useNavigate();
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Success":
@@ -137,7 +140,7 @@ const Payments = () => {
                         </td>
                         <td className="py-4 text-sm text-muted-foreground">{txn.date}</td>
                         <td className="py-4">
-                          <Button size="sm" variant="outline">View</Button>
+                          <Button size="sm" variant="ghost" onClick={() => navigate(`/payments/${txn.id}`)}>View</Button>
                         </td>
                       </tr>
                     ))}
