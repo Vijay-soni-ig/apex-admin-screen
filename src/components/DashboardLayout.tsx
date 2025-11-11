@@ -4,6 +4,8 @@ import { Bell, Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { RealtimeIndicator } from "@/components/RealtimeIndicator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +39,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     className="pl-9 rounded-xl border-border/50 focus-visible:ring-primary/20"
                   />
                 </div>
+                <RealtimeIndicator />
               </div>
+              <ThemeToggle />
               <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate('/notifications')}>
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive" />

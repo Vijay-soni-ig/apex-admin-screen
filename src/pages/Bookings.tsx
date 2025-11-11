@@ -2,15 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Calendar, Download } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { AdvancedFilters } from "@/components/AdvancedFilters";
 
 const bookings = [
   { id: "BKG-2034", customer: "Priya Sharma", provider: "Rajesh Electric", service: "Electrical Repair", status: "Completed", amount: "₹950", date: "28 Oct 2024", time: "10:30 AM" },
@@ -53,31 +47,31 @@ const Bookings = () => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-5">
-        <Card>
+        <Card className="bg-gradient-to-br from-card to-card/50 border-border/50">
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Total Bookings</p>
             <p className="text-2xl font-bold mt-1">12,480</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-success/5 to-card border-success/20">
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Completed</p>
             <p className="text-2xl font-bold mt-1 text-success">9,820</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-primary/5 to-card border-primary/20">
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">In Progress</p>
-            <p className="text-2xl font-bold mt-1 text-accent">145</p>
+            <p className="text-2xl font-bold mt-1 text-primary">145</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-warning/5 to-card border-warning/20">
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Scheduled</p>
             <p className="text-2xl font-bold mt-1 text-warning">312</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-destructive/5 to-card border-destructive/20">
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Cancelled</p>
             <p className="text-2xl font-bold mt-1 text-destructive">203</p>
@@ -88,38 +82,21 @@ const Bookings = () => {
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search bookings..." className="pl-9" />
+          <Input placeholder="Search bookings..." className="pl-9 rounded-xl" />
         </div>
-        <Select defaultValue="all">
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="inprogress">In Progress</SelectItem>
-            <SelectItem value="scheduled">Scheduled</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select defaultValue="all">
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="City" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Cities</SelectItem>
-            <SelectItem value="mumbai">Mumbai</SelectItem>
-            <SelectItem value="delhi">Delhi</SelectItem>
-            <SelectItem value="bangalore">Bangalore</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button variant="outline">
-          <Calendar className="h-4 w-4 mr-2" />
-          Date Range
+        <AdvancedFilters 
+          filterOptions={{
+            cities: ["Mumbai", "Delhi", "Bangalore", "Pune", "Ahmedabad"],
+            statuses: ["Completed", "In Progress", "Scheduled", "Cancelled"],
+          }}
+        />
+        <Button>
+          <Download className="h-4 w-4 mr-2" />
+          Export
         </Button>
       </div>
 
-      <Card>
+      <Card className="border-primary/10">
         <CardHeader>
           <CardTitle>All Bookings</CardTitle>
         </CardHeader>
@@ -140,7 +117,7 @@ const Bookings = () => {
               </thead>
               <tbody>
                 {bookings.map((booking) => (
-                  <tr key={booking.id} className="border-b last:border-0 hover:bg-muted/50">
+                  <tr key={booking.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="py-4 text-sm font-medium">{booking.id}</td>
                     <td className="py-4 text-sm">{booking.customer}</td>
                     <td className="py-4 text-sm">{booking.provider}</td>
