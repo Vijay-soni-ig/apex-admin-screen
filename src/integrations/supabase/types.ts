@@ -14,7 +14,135 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          id: string
+          joined_at: string
+          last_read_at: string | null
+          user_id: string
+          user_role: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          user_id: string
+          user_role: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          user_id?: string
+          user_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          sender_id: string
+          sender_role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          sender_id: string
+          sender_role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          sender_id?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      typing_indicators: {
+        Row: {
+          conversation_id: string
+          id: string
+          is_typing: boolean | null
+          updated_at: string
+          user_id: string
+          user_role: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          is_typing?: boolean | null
+          updated_at?: string
+          user_id: string
+          user_role: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          is_typing?: boolean | null
+          updated_at?: string
+          user_id?: string
+          user_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
