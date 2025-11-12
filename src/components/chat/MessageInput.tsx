@@ -2,14 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
+import { FileUpload } from "./FileUpload";
 
 interface MessageInputProps {
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, attachments?: any[]) => void;
   onTyping: (isTyping: boolean) => void;
 }
 
 export function MessageInput({ onSendMessage, onTyping }: MessageInputProps) {
   const [message, setMessage] = useState("");
+  const [pendingAttachments, setPendingAttachments] = useState<any[]>([]);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -35,15 +37,20 @@ export function MessageInput({ onSendMessage, onTyping }: MessageInputProps) {
   };
 
   const handleSend = () => {
-    if (!message.trim()) return;
+    if (!message.trim() && pendingAttachments.length === 0) return;
 
-    onSendMessage(message);
+    onSendMessage(message || "Sent files", pendingAttachments);
     setMessage("");
+    setPendingAttachments([]);
     onTyping(false);
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
+  };
+
+  const handleFilesSelected = (files: any[]) => {
+    setPendingAttachments(prev => [...prev, ...files]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -54,7 +61,8 @@ export function MessageInput({ onSendMessage, onTyping }: MessageInputProps) {
   };
 
   return (
-    <div className="p-4 border-t border-border/50">
+    <div className="p-4 border-t border-border/50 space-y-3">
+      <FileUpload onFilesSelected={handleFilesSelected} />
       <div className="flex gap-2">
         <Textarea
           value={message}

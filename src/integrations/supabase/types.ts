@@ -72,29 +72,38 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachments: Json | null
           content: string
           conversation_id: string
           created_at: string
           id: string
+          is_pinned: boolean | null
           is_read: boolean | null
+          reactions: Json | null
           sender_id: string
           sender_role: string
         }
         Insert: {
+          attachments?: Json | null
           content: string
           conversation_id: string
           created_at?: string
           id?: string
+          is_pinned?: boolean | null
           is_read?: boolean | null
+          reactions?: Json | null
           sender_id: string
           sender_role: string
         }
         Update: {
+          attachments?: Json | null
           content?: string
           conversation_id?: string
           created_at?: string
           id?: string
+          is_pinned?: boolean | null
           is_read?: boolean | null
+          reactions?: Json | null
           sender_id?: string
           sender_role?: string
         }
@@ -148,7 +157,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_messages: {
+        Args: {
+          conversation_filter?: string
+          date_from?: string
+          date_to?: string
+          search_query: string
+          sender_role_filter?: string
+        }
+        Returns: {
+          attachments: Json
+          content: string
+          conversation_id: string
+          created_at: string
+          is_pinned: boolean
+          message_id: string
+          reactions: Json
+          sender_id: string
+          sender_role: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

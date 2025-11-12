@@ -3,7 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { TypingIndicator } from "./TypingIndicator";
+import { MessageSearch } from "./MessageSearch";
+import { SearchResults } from "./SearchResults";
 import { MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 interface MessageAreaProps {
   conversationId: string | null;
@@ -12,6 +16,8 @@ interface MessageAreaProps {
 export function MessageArea({ conversationId }: MessageAreaProps) {
   const [messages, setMessages] = useState<any[]>([]);
   const [typingUsers, setTypingUsers] = useState<any[]>([]);
+  const [searchMode, setSearchMode] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,6 +41,20 @@ export function MessageArea({ conversationId }: MessageAreaProps) {
         (payload) => {
           setMessages((prev) => [...prev, payload.new]);
           scrollToBottom();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          setMessages((prev) =>
+            prev.map((msg) => (msg.id === payload.new.id ? payload.new : msg))
+          );
         }
       )
       .subscribe();
@@ -91,7 +111,7 @@ export function MessageArea({ conversationId }: MessageAreaProps) {
     }, 100);
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, attachments?: any[]) => {
     if (!conversationId) return;
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -102,10 +122,49 @@ export function MessageArea({ conversationId }: MessageAreaProps) {
       sender_id: user.id,
       sender_role: "admin",
       content,
+      attachments: attachments || [],
     });
 
     if (error) {
       console.error("Error sending message:", error);
+    }
+  };
+
+  const handleSearch = async (filters: any) => {
+    setSearchMode(true);
+    
+    const { data, error } = await supabase.rpc("search_messages", {
+      search_query: filters.query,
+      conversation_filter: conversationId,
+      date_from: filters.dateFrom?.toISOString(),
+      date_to: filters.dateTo?.toISOString(),
+      sender_role_filter: filters.senderRole === "all" ? null : filters.senderRole,
+    });
+
+    if (error) {
+      console.error("Search error:", error);
+      return;
+    }
+
+    setSearchResults(data || []);
+  };
+
+  const handleClearSearch = () => {
+    setSearchMode(false);
+    setSearchResults([]);
+  };
+
+  const handleSelectSearchResult = (convId: string, messageId: string) => {
+    setSearchMode(false);
+    setSearchResults([]);
+    // Scroll to message if in same conversation
+    if (convId === conversationId) {
+      const messageElement = document.getElementById(`message-${messageId}`);
+      messageElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+      messageElement?.classList.add("ring-2", "ring-primary");
+      setTimeout(() => {
+        messageElement?.classList.remove("ring-2", "ring-primary");
+      }, 2000);
     }
   };
 
@@ -137,9 +196,32 @@ export function MessageArea({ conversationId }: MessageAreaProps) {
 
   return (
     <div className="flex-1 flex flex-col">
-      <MessageList messages={messages} messagesEndRef={messagesEndRef} />
-      <TypingIndicator typingUsers={typingUsers} />
-      <MessageInput onSendMessage={handleSendMessage} onTyping={handleTyping} />
+      <div className="border-b border-border/50 p-4 flex items-center justify-between">
+        <h3 className="font-semibold">
+          {searchMode ? "Search Results" : "Messages"}
+        </h3>
+        {searchMode && (
+          <Button variant="ghost" size="sm" onClick={handleClearSearch}>
+            <X className="h-4 w-4 mr-2" />
+            Clear Search
+          </Button>
+        )}
+      </div>
+      
+      <MessageSearch onSearch={handleSearch} onClear={handleClearSearch} />
+      
+      {searchMode ? (
+        <SearchResults 
+          results={searchResults} 
+          onSelectMessage={handleSelectSearchResult}
+        />
+      ) : (
+        <>
+          <MessageList messages={messages} messagesEndRef={messagesEndRef} />
+          <TypingIndicator typingUsers={typingUsers} />
+          <MessageInput onSendMessage={handleSendMessage} onTyping={handleTyping} />
+        </>
+      )}
     </div>
   );
 }
