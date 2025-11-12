@@ -28,6 +28,7 @@ import AddService from "./pages/AddService";
 import EditService from "./pages/EditService";
 import PricingRules from "./pages/PricingRules";
 import CreateRole from "./pages/CreateRole";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/roles" element={<Roles />} />
             <Route path="/roles/create" element={<CreateRole />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </DashboardLayout>

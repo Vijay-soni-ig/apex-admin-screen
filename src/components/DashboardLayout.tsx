@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { RealtimeIndicator } from "@/components/RealtimeIndicator";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
+  const { unreadCount } = useUnreadMessages();
 
   return (
     <SidebarProvider>
@@ -42,9 +44,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <RealtimeIndicator />
               </div>
               <ThemeToggle />
-              <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate('/notifications')}>
+              <Button variant="ghost" size="icon" className="rounded-xl relative" onClick={() => navigate('/messages')}>
                 <Bell className="h-5 w-5" />
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Button>
               
               <DropdownMenu>

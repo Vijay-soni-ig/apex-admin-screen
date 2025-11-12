@@ -13,6 +13,7 @@ import {
   BarChart3,
   Shield,
   Settings,
+  MessageSquare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +33,7 @@ const navItems = [
   { title: "Providers", url: "/providers", icon: Wrench },
   { title: "Verification", url: "/verification", icon: BadgeCheck },
   { title: "Bookings", url: "/bookings", icon: Calendar },
+  { title: "Messages", url: "/messages", icon: MessageSquare },
   { title: "Payments", url: "/payments", icon: CreditCard },
   { title: "Services", url: "/services", icon: Package },
   { title: "Tickets", url: "/tickets", icon: Ticket },
