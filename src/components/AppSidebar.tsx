@@ -39,6 +39,7 @@ const navGroups = [
     label: "User Management",
     items: [
       { title: "Users", url: "/users", icon: Users },
+      { title: "Teams", url: "/teams", icon: Users },
       { title: "Providers", url: "/providers", icon: Wrench },
       { title: "Verification", url: "/verification", icon: BadgeCheck },
       { title: "Roles & Access", url: "/roles", icon: Settings },
