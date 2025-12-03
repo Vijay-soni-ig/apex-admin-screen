@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Teams from "./pages/Teams";
+import TeamSettings from "./pages/TeamSettings";
 import Providers from "./pages/Providers";
 import Verification from "./pages/Verification";
 import Bookings from "./pages/Bookings";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/users" element={<Users />} />
             <Route path="/users/add" element={<AddUser />} />
             <Route path="/teams" element={<Teams />} />
+            <Route path="/teams/:teamId/settings" element={<TeamSettings />} />
             <Route path="/providers" element={<Providers />} />
             <Route path="/providers/add" element={<AddProvider />} />
             <Route path="/provider-profile/:providerId" element={<ProviderProfile />} />
