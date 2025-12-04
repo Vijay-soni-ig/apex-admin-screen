@@ -37,6 +37,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BulkActions } from "@/components/teams/BulkActions";
 import { TeamStatistics } from "@/components/teams/TeamStatistics";
+import { TeamComparison } from "@/components/teams/TeamComparison";
 
 export default function Teams() {
   const navigate = useNavigate();
@@ -325,6 +326,11 @@ export default function Teams() {
         {/* Team Statistics */}
         {teams && allTeamMembers && (
           <TeamStatistics teams={teams} teamMembers={allTeamMembers} />
+        )}
+
+        {/* Team Comparison */}
+        {teams && teams.length > 1 && allTeamMembers && (
+          <TeamComparison teams={teams} teamMembers={allTeamMembers} />
         )}
 
         <div className="grid md:grid-cols-2 gap-6">
