@@ -30,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, Users as UsersIcon, Trash2, UserPlus, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -58,19 +59,31 @@ export default function Teams() {
     },
   });
 
-  // Fetch team members for selected team
+  // Fetch team members with profiles for selected team
   const { data: teamMembers } = useQuery({
     queryKey: ["team-members", selectedTeam],
     queryFn: async () => {
       if (!selectedTeam) return [];
       
-      const { data, error } = await supabase
+      const { data: members, error } = await supabase
         .from("team_members")
         .select("*")
         .eq("team_id", selectedTeam);
       
       if (error) throw error;
-      return data;
+      
+      // Fetch profiles for all member user_ids
+      const userIds = members.map(m => m.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email, avatar_url")
+        .in("user_id", userIds);
+      
+      // Merge profile data with members
+      return members.map(member => ({
+        ...member,
+        profile: profiles?.find(p => p.user_id === member.user_id) || null
+      }));
     },
     enabled: !!selectedTeam,
   });
@@ -437,7 +450,7 @@ export default function Teams() {
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
-                    <TableHead>User ID</TableHead>
+                    <TableHead>Member</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -454,8 +467,24 @@ export default function Teams() {
                           }
                         />
                       </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {member.user_id.slice(0, 8)}...
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={member.profile?.avatar_url || undefined} />
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                              {member.profile?.full_name?.charAt(0)?.toUpperCase() || 
+                               member.profile?.email?.charAt(0)?.toUpperCase() || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">
+                              {member.profile?.full_name || "Unknown User"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {member.profile?.email || member.user_id.slice(0, 8) + "..."}
+                            </span>
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{member.role}</Badge>
