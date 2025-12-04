@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BulkActions } from "@/components/teams/BulkActions";
+import { TeamStatistics } from "@/components/teams/TeamStatistics";
 
 export default function Teams() {
   const navigate = useNavigate();
@@ -53,6 +54,19 @@ export default function Teams() {
         .from("teams")
         .select("*")
         .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch all team members for statistics
+  const { data: allTeamMembers } = useQuery({
+    queryKey: ["all-team-members"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_members")
+        .select("*");
       
       if (error) throw error;
       return data;
@@ -307,6 +321,11 @@ export default function Teams() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Team Statistics */}
+        {teams && allTeamMembers && (
+          <TeamStatistics teams={teams} teamMembers={allTeamMembers} />
+        )}
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Teams List */}
