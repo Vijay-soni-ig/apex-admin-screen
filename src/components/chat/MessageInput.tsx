@@ -3,6 +3,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { FileUpload } from "./FileUpload";
+import { messageSchema } from "@/lib/validations";
+import { toast } from "sonner";
 
 interface MessageInputProps {
   onSendMessage: (content: string, attachments?: any[]) => void;
@@ -23,7 +25,13 @@ export function MessageInput({ onSendMessage, onTyping }: MessageInputProps) {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
+    const value = e.target.value;
+    // Limit input length
+    if (value.length > 5000) {
+      toast.error("Message must be less than 5000 characters");
+      return;
+    }
+    setMessage(value);
 
     onTyping(true);
 
@@ -38,6 +46,15 @@ export function MessageInput({ onSendMessage, onTyping }: MessageInputProps) {
 
   const handleSend = () => {
     if (!message.trim() && pendingAttachments.length === 0) return;
+
+    // Validate message content
+    if (message.trim()) {
+      const result = messageSchema.safeParse({ content: message });
+      if (!result.success) {
+        toast.error(result.error.errors[0]?.message || "Invalid message");
+        return;
+      }
+    }
 
     onSendMessage(message || "Sent files", pendingAttachments);
     setMessage("");
@@ -70,6 +87,7 @@ export function MessageInput({ onSendMessage, onTyping }: MessageInputProps) {
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           className="min-h-[60px] max-h-[120px] resize-none"
+          maxLength={5000}
         />
         <Button onClick={handleSend} size="icon" className="shrink-0 h-[60px] w-[60px]">
           <Send className="h-5 w-5" />
