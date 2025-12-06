@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -112,12 +112,35 @@ const navGroups = [
   },
 ];
 
+const STORAGE_KEY = "sidebar-groups-state";
+
+const getDefaultState = () => 
+  navGroups.reduce((acc, group) => ({ ...acc, [group.label]: true }), {});
+
+const loadFromStorage = (): Record<string, boolean> => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error("Failed to load sidebar state from localStorage", e);
+  }
+  return getDefaultState();
+};
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => 
-    navGroups.reduce((acc, group) => ({ ...acc, [group.label]: true }), {})
-  );
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(loadFromStorage);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(openGroups));
+    } catch (e) {
+      console.error("Failed to save sidebar state to localStorage", e);
+    }
+  }, [openGroups]);
 
   const toggleGroup = (label: string) => {
     setOpenGroups(prev => ({ ...prev, [label]: !prev[label] }));
