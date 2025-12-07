@@ -13,8 +13,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 
-const pendingProviders = [
+interface Provider {
+  id: string;
+  name: string;
+  city: string;
+  category: string;
+  documents: { idProof: boolean; addressProof: boolean; certificate: boolean };
+  status: "Pending" | "Approved" | "Rejected";
+  submittedOn: string;
+  phone: string;
+  email: string;
+  notes?: string;
+  reviewedOn?: string;
+}
+
+const initialProviders: Provider[] = [
   { 
     id: "PRV-2401", 
     name: "Rahul Mehta", 
@@ -48,21 +63,175 @@ const pendingProviders = [
     phone: "+91 98234 88221",
     email: "amit@email.com"
   },
+  { 
+    id: "PRV-2398", 
+    name: "Vikash Sharma", 
+    city: "Mumbai", 
+    category: "Plumbing",
+    documents: { idProof: true, addressProof: true, certificate: true }, 
+    status: "Approved",
+    submittedOn: "20 Oct 2024",
+    phone: "+91 98234 88222",
+    email: "vikash@email.com",
+    notes: "All documents verified",
+    reviewedOn: "21 Oct 2024"
+  },
+  { 
+    id: "PRV-2397", 
+    name: "Ravi Patel", 
+    city: "Ahmedabad", 
+    category: "Electrical",
+    documents: { idProof: true, addressProof: true, certificate: true }, 
+    status: "Approved",
+    submittedOn: "18 Oct 2024",
+    phone: "+91 98234 88223",
+    email: "ravi@email.com",
+    notes: "Verified with background check",
+    reviewedOn: "19 Oct 2024"
+  },
+  { 
+    id: "PRV-2396", 
+    name: "Suresh Nair", 
+    city: "Chennai", 
+    category: "AC Service",
+    documents: { idProof: true, addressProof: false, certificate: false }, 
+    status: "Rejected",
+    submittedOn: "15 Oct 2024",
+    phone: "+91 98234 88224",
+    email: "suresh@email.com",
+    notes: "Missing address proof and certificate",
+    reviewedOn: "16 Oct 2024"
+  },
 ];
 
 const Verification = () => {
-  const [selectedProvider, setSelectedProvider] = useState<any>(null);
+  const [providers, setProviders] = useState<Provider[]>(initialProviders);
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [notes, setNotes] = useState("");
 
+  const pendingProviders = providers.filter(p => p.status === "Pending");
+  const approvedProviders = providers.filter(p => p.status === "Approved");
+  const rejectedProviders = providers.filter(p => p.status === "Rejected");
+
   const handleApprove = () => {
-    // Handle approval logic
+    if (!selectedProvider) return;
+    
+    const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    setProviders(prev => prev.map(p => 
+      p.id === selectedProvider.id 
+        ? { ...p, status: "Approved" as const, notes: notes || "Approved", reviewedOn: today }
+        : p
+    ));
+    
+    toast({
+      title: "Provider Approved",
+      description: `${selectedProvider.name} has been approved successfully.`,
+    });
+    
     setSelectedProvider(null);
+    setNotes("");
   };
 
   const handleReject = () => {
-    // Handle rejection logic
+    if (!selectedProvider) return;
+    
+    const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    
+    setProviders(prev => prev.map(p => 
+      p.id === selectedProvider.id 
+        ? { ...p, status: "Rejected" as const, notes: notes || "Rejected", reviewedOn: today }
+        : p
+    ));
+    
+    toast({
+      title: "Provider Rejected",
+      description: `${selectedProvider.name} has been rejected.`,
+      variant: "destructive",
+    });
+    
     setSelectedProvider(null);
+    setNotes("");
   };
+
+  const renderProviderTable = (providerList: Provider[], showReviewAction: boolean = false) => (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b text-left text-sm">
+            <th className="pb-3 font-medium">ID</th>
+            <th className="pb-3 font-medium">Name</th>
+            <th className="pb-3 font-medium">Category</th>
+            <th className="pb-3 font-medium">City</th>
+            <th className="pb-3 font-medium">Documents</th>
+            <th className="pb-3 font-medium">Submitted</th>
+            {!showReviewAction && <th className="pb-3 font-medium">Reviewed</th>}
+            <th className="pb-3 font-medium">Status</th>
+            {!showReviewAction && <th className="pb-3 font-medium">Notes</th>}
+            {showReviewAction && <th className="pb-3 font-medium">Action</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {providerList.map((provider) => (
+            <tr key={provider.id} className="border-b last:border-0 hover:bg-muted/50">
+              <td className="py-4 text-sm font-medium">{provider.id}</td>
+              <td className="py-4 font-medium">{provider.name}</td>
+              <td className="py-4 text-sm">{provider.category}</td>
+              <td className="py-4 text-sm">{provider.city}</td>
+              <td className="py-4">
+                <div className="flex gap-1">
+                  <Badge variant={provider.documents.idProof ? "default" : "outline"} className={provider.documents.idProof ? "bg-success text-success-foreground" : ""}>
+                    ID
+                  </Badge>
+                  <Badge variant={provider.documents.addressProof ? "default" : "outline"} className={provider.documents.addressProof ? "bg-success text-success-foreground" : ""}>
+                    Addr
+                  </Badge>
+                  <Badge variant={provider.documents.certificate ? "default" : "outline"} className={provider.documents.certificate ? "bg-success text-success-foreground" : ""}>
+                    Cert
+                  </Badge>
+                </div>
+              </td>
+              <td className="py-4 text-sm text-muted-foreground">{provider.submittedOn}</td>
+              {!showReviewAction && <td className="py-4 text-sm text-muted-foreground">{provider.reviewedOn}</td>}
+              <td className="py-4">
+                <Badge 
+                  variant="outline" 
+                  className={
+                    provider.status === "Pending" 
+                      ? "border-warning text-warning" 
+                      : provider.status === "Approved"
+                      ? "border-success text-success bg-success/10"
+                      : "border-destructive text-destructive bg-destructive/10"
+                  }
+                >
+                  {provider.status}
+                </Badge>
+              </td>
+              {!showReviewAction && (
+                <td className="py-4 text-sm text-muted-foreground max-w-[200px] truncate">
+                  {provider.notes || "-"}
+                </td>
+              )}
+              {showReviewAction && (
+                <td className="py-4">
+                  <Button size="sm" variant="outline" onClick={() => setSelectedProvider(provider)}>
+                    Review
+                  </Button>
+                </td>
+              )}
+            </tr>
+          ))}
+          {providerList.length === 0 && (
+            <tr>
+              <td colSpan={showReviewAction ? 8 : 9} className="py-8 text-center text-muted-foreground">
+                No providers found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -78,7 +247,7 @@ const Verification = () => {
               <Clock className="h-4 w-4 text-warning" />
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold mt-1">5</p>
+                <p className="text-2xl font-bold mt-1">{pendingProviders.length}</p>
               </div>
             </div>
           </CardContent>
@@ -89,7 +258,7 @@ const Verification = () => {
               <CheckCircle className="h-4 w-4 text-success" />
               <div>
                 <p className="text-sm text-muted-foreground">Approved</p>
-                <p className="text-2xl font-bold mt-1">142</p>
+                <p className="text-2xl font-bold mt-1">{approvedProviders.length}</p>
               </div>
             </div>
           </CardContent>
@@ -100,7 +269,7 @@ const Verification = () => {
               <XCircle className="h-4 w-4 text-destructive" />
               <div>
                 <p className="text-sm text-muted-foreground">Rejected</p>
-                <p className="text-2xl font-bold mt-1">23</p>
+                <p className="text-2xl font-bold mt-1">{rejectedProviders.length}</p>
               </div>
             </div>
           </CardContent>
@@ -122,9 +291,9 @@ const Verification = () => {
 
       <Tabs defaultValue="pending" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="pending">Pending (5)</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected</TabsTrigger>
+          <TabsTrigger value="pending">Pending ({pendingProviders.length})</TabsTrigger>
+          <TabsTrigger value="approved">Approved ({approvedProviders.length})</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected ({rejectedProviders.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
@@ -133,78 +302,35 @@ const Verification = () => {
               <CardTitle>Pending Verifications</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b text-left text-sm">
-                      <th className="pb-3 font-medium">ID</th>
-                      <th className="pb-3 font-medium">Name</th>
-                      <th className="pb-3 font-medium">Category</th>
-                      <th className="pb-3 font-medium">City</th>
-                      <th className="pb-3 font-medium">Documents</th>
-                      <th className="pb-3 font-medium">Submitted</th>
-                      <th className="pb-3 font-medium">Status</th>
-                      <th className="pb-3 font-medium">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingProviders.map((provider) => (
-                      <tr key={provider.id} className="border-b last:border-0 hover:bg-muted/50">
-                        <td className="py-4 text-sm font-medium">{provider.id}</td>
-                        <td className="py-4 font-medium">{provider.name}</td>
-                        <td className="py-4 text-sm">{provider.category}</td>
-                        <td className="py-4 text-sm">{provider.city}</td>
-                        <td className="py-4">
-                          <div className="flex gap-1">
-                            <Badge variant={provider.documents.idProof ? "default" : "outline"} className={provider.documents.idProof ? "bg-success text-success-foreground" : ""}>
-                              ID
-                            </Badge>
-                            <Badge variant={provider.documents.addressProof ? "default" : "outline"} className={provider.documents.addressProof ? "bg-success text-success-foreground" : ""}>
-                              Addr
-                            </Badge>
-                            <Badge variant={provider.documents.certificate ? "default" : "outline"} className={provider.documents.certificate ? "bg-success text-success-foreground" : ""}>
-                              Cert
-                            </Badge>
-                          </div>
-                        </td>
-                        <td className="py-4 text-sm text-muted-foreground">{provider.submittedOn}</td>
-                        <td className="py-4">
-                          <Badge variant="outline" className="border-warning text-warning">
-                            {provider.status}
-                          </Badge>
-                        </td>
-                        <td className="py-4">
-                          <Button size="sm" variant="outline" onClick={() => setSelectedProvider(provider)}>
-                            Review
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              {renderProviderTable(pendingProviders, true)}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="approved">
           <Card>
-            <CardContent className="p-6">
-              <p className="text-muted-foreground">Approved providers will be displayed here</p>
+            <CardHeader>
+              <CardTitle>Approved Providers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {renderProviderTable(approvedProviders, false)}
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="rejected">
           <Card>
-            <CardContent className="p-6">
-              <p className="text-muted-foreground">Rejected applications will be displayed here</p>
+            <CardHeader>
+              <CardTitle>Rejected Applications</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {renderProviderTable(rejectedProviders, false)}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      <Dialog open={!!selectedProvider} onOpenChange={() => setSelectedProvider(null)}>
+      <Dialog open={!!selectedProvider} onOpenChange={() => { setSelectedProvider(null); setNotes(""); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Verify Provider Application</DialogTitle>
@@ -248,21 +374,42 @@ const Verification = () => {
                     <FileText className="h-4 w-4" />
                     <span className="text-sm">ID Proof (Aadhaar Card)</span>
                   </div>
-                  <Button size="sm" variant="outline">View</Button>
+                  <div className="flex items-center gap-2">
+                    {selectedProvider?.documents.idProof ? (
+                      <Badge className="bg-success text-success-foreground">Uploaded</Badge>
+                    ) : (
+                      <Badge variant="destructive">Missing</Badge>
+                    )}
+                    <Button size="sm" variant="outline" disabled={!selectedProvider?.documents.idProof}>View</Button>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     <span className="text-sm">Address Proof</span>
                   </div>
-                  <Button size="sm" variant="outline">View</Button>
+                  <div className="flex items-center gap-2">
+                    {selectedProvider?.documents.addressProof ? (
+                      <Badge className="bg-success text-success-foreground">Uploaded</Badge>
+                    ) : (
+                      <Badge variant="destructive">Missing</Badge>
+                    )}
+                    <Button size="sm" variant="outline" disabled={!selectedProvider?.documents.addressProof}>View</Button>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     <span className="text-sm">Professional Certificate</span>
                   </div>
-                  <Button size="sm" variant="outline">View</Button>
+                  <div className="flex items-center gap-2">
+                    {selectedProvider?.documents.certificate ? (
+                      <Badge className="bg-success text-success-foreground">Uploaded</Badge>
+                    ) : (
+                      <Badge variant="destructive">Missing</Badge>
+                    )}
+                    <Button size="sm" variant="outline" disabled={!selectedProvider?.documents.certificate}>View</Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -278,10 +425,11 @@ const Verification = () => {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setSelectedProvider(null)}>
+              <Button variant="outline" className="flex-1" onClick={() => { setSelectedProvider(null); setNotes(""); }}>
                 Cancel
               </Button>
               <Button variant="destructive" className="flex-1" onClick={handleReject}>
+                <XCircle className="h-4 w-4 mr-2" />
                 Reject
               </Button>
               <Button className="flex-1 bg-success hover:bg-success/90" onClick={handleApprove}>

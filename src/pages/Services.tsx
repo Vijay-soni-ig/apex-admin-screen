@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Plus, MoreVertical, Package, Edit, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
@@ -10,8 +13,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { toast } from "@/hooks/use-toast";
 
-const categories = [
+interface Category {
+  name: string;
+  icon: string;
+  description: string;
+  services: number;
+  status: string;
+}
+
+const initialCategories: Category[] = [
   { name: "Cleaning", icon: "🧹", description: "Home & Office Cleaning", services: 8, status: "Active" },
   { name: "Electrical", icon: "⚡", description: "Electrical Repairs & Installation", services: 12, status: "Active" },
   { name: "Plumbing", icon: "🔧", description: "Plumbing Services", services: 10, status: "Active" },
@@ -31,6 +58,61 @@ const services = [
 
 const Services = () => {
   const navigate = useNavigate();
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [editCategoryOpen, setEditCategoryOpen] = useState(false);
+  const [manageCategoryOpen, setManageCategoryOpen] = useState(false);
+  const [deleteCategoryOpen, setDeleteCategoryOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", description: "", icon: "" });
+
+  const handleEditCategory = (category: Category) => {
+    setSelectedCategory(category);
+    setEditForm({ name: category.name, description: category.description, icon: category.icon });
+    setEditCategoryOpen(true);
+  };
+
+  const handleManageCategory = (category: Category) => {
+    setSelectedCategory(category);
+    setManageCategoryOpen(true);
+  };
+
+  const handleDeleteCategory = (category: Category) => {
+    setSelectedCategory(category);
+    setDeleteCategoryOpen(true);
+  };
+
+  const confirmEditCategory = () => {
+    if (!selectedCategory) return;
+    
+    setCategories(prev => prev.map(c => 
+      c.name === selectedCategory.name 
+        ? { ...c, name: editForm.name, description: editForm.description, icon: editForm.icon }
+        : c
+    ));
+    
+    toast({
+      title: "Category Updated",
+      description: `${editForm.name} has been updated successfully.`,
+    });
+    
+    setEditCategoryOpen(false);
+    setSelectedCategory(null);
+  };
+
+  const confirmDeleteCategory = () => {
+    if (!selectedCategory) return;
+    
+    setCategories(prev => prev.filter(c => c.name !== selectedCategory.name));
+    
+    toast({
+      title: "Category Deleted",
+      description: `${selectedCategory.name} has been deleted.`,
+      variant: "destructive",
+    });
+    
+    setDeleteCategoryOpen(false);
+    setSelectedCategory(null);
+  };
   
   return (
     <div className="space-y-6">
@@ -55,7 +137,7 @@ const Services = () => {
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Total Categories</p>
-            <p className="text-2xl font-bold mt-1">12</p>
+            <p className="text-2xl font-bold mt-1">{categories.length}</p>
           </CardContent>
         </Card>
         <Card>
@@ -104,10 +186,22 @@ const Services = () => {
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Edit Category</DropdownMenuItem>
-                        <DropdownMenuItem>Manage Services</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                      <DropdownMenuContent align="end" className="bg-popover">
+                        <DropdownMenuItem onClick={() => handleEditCategory(category)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Category
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleManageCategory(category)}>
+                          <Package className="h-4 w-4 mr-2" />
+                          Manage Services
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => handleDeleteCategory(category)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -209,7 +303,7 @@ const Services = () => {
                           <Badge className="bg-success text-success-foreground">Active</Badge>
                         </td>
                         <td className="py-4">
-                          <Button size="sm" variant="outline">Edit</Button>
+                          <Button size="sm" variant="outline" onClick={() => navigate('/pricing-rules')}>Edit</Button>
                         </td>
                       </tr>
                       <tr className="hover:bg-muted/50">
@@ -219,7 +313,7 @@ const Services = () => {
                           <Badge className="bg-success text-success-foreground">Active</Badge>
                         </td>
                         <td className="py-4">
-                          <Button size="sm" variant="outline">Edit</Button>
+                          <Button size="sm" variant="outline" onClick={() => navigate('/pricing-rules')}>Edit</Button>
                         </td>
                       </tr>
                     </tbody>
@@ -230,6 +324,103 @@ const Services = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit Category Dialog */}
+      <Dialog open={editCategoryOpen} onOpenChange={setEditCategoryOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Category</DialogTitle>
+            <DialogDescription>
+              Update the category details below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="categoryName">Category Name</Label>
+              <Input 
+                id="categoryName" 
+                value={editForm.name}
+                onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="categoryDescription">Description</Label>
+              <Input 
+                id="categoryDescription" 
+                value={editForm.description}
+                onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="categoryIcon">Icon (Emoji)</Label>
+              <Input 
+                id="categoryIcon" 
+                value={editForm.icon}
+                onChange={(e) => setEditForm(prev => ({ ...prev, icon: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditCategoryOpen(false)}>Cancel</Button>
+            <Button onClick={confirmEditCategory}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Services Sheet */}
+      <Sheet open={manageCategoryOpen} onOpenChange={setManageCategoryOpen}>
+        <SheetContent className="sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle>Manage Services - {selectedCategory?.name}</SheetTitle>
+            <SheetDescription>
+              View and manage services in this category.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            {services
+              .filter(s => s.category === selectedCategory?.name)
+              .map((service, idx) => (
+                <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <p className="font-medium">{service.name}</p>
+                    <p className="text-sm text-muted-foreground">{service.duration} • {service.price}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => { setManageCategoryOpen(false); navigate(`/services/edit/${idx + 1}`); }}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            {services.filter(s => s.category === selectedCategory?.name).length === 0 && (
+              <p className="text-center text-muted-foreground py-8">No services in this category</p>
+            )}
+            <Button className="w-full" onClick={() => { setManageCategoryOpen(false); navigate('/services/add'); }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Service
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Delete Category Dialog */}
+      <Dialog open={deleteCategoryOpen} onOpenChange={setDeleteCategoryOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Category</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{selectedCategory?.name}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteCategoryOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDeleteCategory}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
