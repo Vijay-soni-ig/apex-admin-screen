@@ -180,8 +180,8 @@ const Providers = () => {
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => navigate(`/providers/${provider.id}`)}>View Profile</Button>
-                <Button size="sm" className="flex-1" onClick={() => navigate(`/providers/${provider.id}/bookings`)}>View Bookings</Button>
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => navigate(`/provider-profile/${provider.id}`)}>View Profile</Button>
+                <Button size="sm" className="flex-1" onClick={() => navigate(`/provider-bookings/${provider.id}`)}>View Bookings</Button>
               </div>
             </CardContent>
           </Card>

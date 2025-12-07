@@ -133,7 +133,7 @@ const Bookings = () => {
                       </Badge>
                     </td>
                     <td className="py-4">
-                      <Button size="sm" variant="outline" onClick={() => navigate(`/bookings/${booking.id}`)}>View Details</Button>
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/booking-details/${booking.id}`)}>View Details</Button>
                     </td>
                   </tr>
                 ))}
