@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, FileText, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Search, FileText, CheckCircle, XCircle, Clock, Filter } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 
@@ -108,10 +115,49 @@ const Verification = () => {
   const [providers, setProviders] = useState<Provider[]>(initialProviders);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [notes, setNotes] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [cityFilter, setCityFilter] = useState<string>("all");
+
+  // Get unique categories and cities for filter options
+  const categories = useMemo(() => {
+    const cats = [...new Set(providers.map(p => p.category))];
+    return cats.sort();
+  }, [providers]);
+
+  const cities = useMemo(() => {
+    const citiesList = [...new Set(providers.map(p => p.city))];
+    return citiesList.sort();
+  }, [providers]);
+
+  // Filter function
+  const filterProviders = (providerList: Provider[]) => {
+    return providerList.filter(provider => {
+      const matchesSearch = searchQuery === "" || 
+        provider.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        provider.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        provider.email.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesCategory = categoryFilter === "all" || provider.category === categoryFilter;
+      const matchesCity = cityFilter === "all" || provider.city === cityFilter;
+      
+      return matchesSearch && matchesCategory && matchesCity;
+    });
+  };
 
   const pendingProviders = providers.filter(p => p.status === "Pending");
   const approvedProviders = providers.filter(p => p.status === "Approved");
   const rejectedProviders = providers.filter(p => p.status === "Rejected");
+
+  const filteredPending = filterProviders(pendingProviders);
+  const filteredApproved = filterProviders(approvedProviders);
+  const filteredRejected = filterProviders(rejectedProviders);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter("all");
+    setCityFilter("all");
+  };
 
   const handleApprove = () => {
     if (!selectedProvider) return;
@@ -282,18 +328,57 @@ const Verification = () => {
         </Card>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search by name or ID..." className="pl-9" />
+          <Input 
+            placeholder="Search by name, ID, or email..." 
+            className="pl-9" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <Filter className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>{category}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={cityFilter} onValueChange={setCityFilter}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="City" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Cities</SelectItem>
+            {cities.map((city) => (
+              <SelectItem key={city} value={city}>{city}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {(searchQuery || categoryFilter !== "all" || cityFilter !== "all") && (
+          <Button variant="ghost" onClick={clearFilters} className="shrink-0">
+            Clear Filters
+          </Button>
+        )}
       </div>
 
       <Tabs defaultValue="pending" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="pending">Pending ({pendingProviders.length})</TabsTrigger>
-          <TabsTrigger value="approved">Approved ({approvedProviders.length})</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected ({rejectedProviders.length})</TabsTrigger>
+          <TabsTrigger value="pending">
+            Pending ({filteredPending.length}{filteredPending.length !== pendingProviders.length ? `/${pendingProviders.length}` : ''})
+          </TabsTrigger>
+          <TabsTrigger value="approved">
+            Approved ({filteredApproved.length}{filteredApproved.length !== approvedProviders.length ? `/${approvedProviders.length}` : ''})
+          </TabsTrigger>
+          <TabsTrigger value="rejected">
+            Rejected ({filteredRejected.length}{filteredRejected.length !== rejectedProviders.length ? `/${rejectedProviders.length}` : ''})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
@@ -302,7 +387,7 @@ const Verification = () => {
               <CardTitle>Pending Verifications</CardTitle>
             </CardHeader>
             <CardContent>
-              {renderProviderTable(pendingProviders, true)}
+              {renderProviderTable(filteredPending, true)}
             </CardContent>
           </Card>
         </TabsContent>
@@ -313,7 +398,7 @@ const Verification = () => {
               <CardTitle>Approved Providers</CardTitle>
             </CardHeader>
             <CardContent>
-              {renderProviderTable(approvedProviders, false)}
+              {renderProviderTable(filteredApproved, false)}
             </CardContent>
           </Card>
         </TabsContent>
@@ -324,7 +409,7 @@ const Verification = () => {
               <CardTitle>Rejected Applications</CardTitle>
             </CardHeader>
             <CardContent>
-              {renderProviderTable(rejectedProviders, false)}
+              {renderProviderTable(filteredRejected, false)}
             </CardContent>
           </Card>
         </TabsContent>
