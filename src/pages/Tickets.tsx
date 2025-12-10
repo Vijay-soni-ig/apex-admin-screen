@@ -174,7 +174,7 @@ const Tickets = () => {
                         </td>
                         <td className="py-4 text-sm text-muted-foreground">{ticket.updated}</td>
                         <td className="py-4">
-                          <Button size="sm" variant="outline">View</Button>
+                          <Button size="sm" variant="outline" onClick={() => window.location.href = `/ticket-details/${ticket.id}`}>View</Button>
                         </td>
                       </tr>
                     ))}

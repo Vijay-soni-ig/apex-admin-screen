@@ -12,6 +12,7 @@ import Bookings from "./pages/Bookings";
 import Payments from "./pages/Payments";
 import Services from "./pages/Services";
 import Tickets from "./pages/Tickets";
+import TicketDetails from "./pages/TicketDetails";
 import Reviews from "./pages/Reviews";
 import Notifications from "./pages/Notifications";
 import Analytics from "./pages/Analytics";
@@ -29,6 +30,8 @@ import EditService from "./pages/EditService";
 import PricingRules from "./pages/PricingRules";
 import CreateRole from "./pages/CreateRole";
 import Messages from "./pages/Messages";
+import Settings from "./pages/Settings";
+import HelpCenter from "./pages/HelpCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +61,7 @@ const App = () => (
             <Route path="/services/edit/:serviceId" element={<EditService />} />
             <Route path="/services/pricing-rules" element={<PricingRules />} />
             <Route path="/tickets" element={<Tickets />} />
+            <Route path="/ticket-details/:ticketId" element={<TicketDetails />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/analytics" element={<Analytics />} />
@@ -66,6 +70,8 @@ const App = () => (
             <Route path="/roles/create" element={<CreateRole />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/messages" element={<Messages />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/help" element={<HelpCenter />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </DashboardLayout>
